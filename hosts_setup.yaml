@@ -2,6 +2,78 @@
   hosts: all
   become: yes
   tasks:
+  - name: Ensure all packages are at latest version
+    dnf:
+      name: '*'
+      state: latest
   - name: Ensure timezone is set
     community.general.timezone:
       name: "{{ timezone }}"
+  - name: Ensure chrony is present
+    dnf:
+      name: chrony
+      state: present
+  - name: Ensure chrony service is enabled
+    service:
+      name: chronyd
+      enabled: yes
+      state: started
+  - name: Ensure epel-release is present
+    dnf:
+      name: epel-release
+      state: present
+  - name: Ensure snapd is present
+    dnf:
+      name: snapd
+      state: present
+  - name: Ensure selinux is in permissive mode
+    ansible.posix.selinux:
+      state: permissive
+      policy: targeted
+  - name: Ensure chsnapd service is enabled
+    service:
+      name: snapd.socket
+      enabled: yes
+      state: started
+  - name: Ensure /snap symbolic link is present
+    file:
+      src: /var/lib/snapd/snap
+      dest: /snap
+      state: link
+  - name: Ensure snap path is added to PATH variable
+    copy:
+      dest: "/etc/profile.d/snap.sh"
+      content: |
+        export PATH=$PATH:/var/lib/snapd/snap/bin
+  - name: Ensure hosts are rebooted
+    reboot:
+      reboot_timeout: 600
+  - name: Ensure microk8s snap is installed
+    community.general.snap:
+      name: microk8s
+      classic: yes
+  - name: Ensure user is in microk8s group
+    user:
+      name: '{{ ansible_user }}'
+      groups: microk8s
+      append: yes
+  - name: Ensure firewalld is stopped and disabled
+    service:
+      name: firewalld
+      enabled: no
+      state: stopped
+  # - name: Ensure required firewall ports are open
+  #   ansible.posix.firewalld:
+  #     port: "{{ item }}"
+  #     permanent: yes
+  #     immediate: yes
+  #     state: enabled
+  #   with_items:
+  #     - 10255/tcp
+  #     - 12379/tcp
+  #     - 25000/tcp
+  #     - 16443/tcp
+  #     - 10250/tcp
+  #     - 10257/tcp
+  #     - 10259/tcp
+  #     - 32000/tcp

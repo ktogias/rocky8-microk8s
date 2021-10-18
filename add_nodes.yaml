@@ -1,0 +1,22 @@
+- name: HostsSetup
+  hosts: init
+  become: no
+  tasks:
+  - name: Run add-node command
+    command: microk8s add-node
+    register: add_node_output
+  - name: Set worker nodes join command fact
+    set_fact: 
+      JOIN_COMMAND: "{{ add_node_output.stdout_lines[-1] }}"
+  - name: Display join command
+    debug:
+      var: hostvars[inventory_hostname]['JOIN_COMMAND']
+
+- name: Join workers
+  hosts: workers
+  become: yes 
+  vars:
+    JOIN_COMMAND: "{{ hostvars[groups['init'][0]]['JOIN_COMMAND'] | default('') }}"
+  tasks:
+  - name: Execute join command
+    shell: "runuser -l root -c '{{ JOIN_COMMAND }}'"

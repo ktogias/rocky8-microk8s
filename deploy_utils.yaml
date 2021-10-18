@@ -1,0 +1,25 @@
+- name: DeployUtilities
+  hosts: init
+  become: yes
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/var/lib/snapd/snap/bin"
+    LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default('') }}:/lib64"
+  tasks:
+  - name: Ensure ingress, dns, dashboard, storage, registry are enabled
+    command: microk8s enable ingress dns dashboard storage registry:size={{registrySize | default('20Gi')}}
+  - name: Describe user secret
+    shell: microk8s kubectl -n kube-system describe secret $(microk8s kubectl -n kube-system get secret | grep default-token | cut -d " " -f1)
+    register: user_secret
+  - name: Ensure ~/manifests dir exists
+    file:
+      path: ~/manifests
+      state: directory
+  - name: Template dashboard ingress manifest
+    template:
+      src: manifests/dashboard_ingress.yaml.tmpl
+      dest: ~/manifests/dashboard_ingress.yaml
+  - name: Ensure ingress manifest is applied
+    command: microk8s kubectl apply -f ~/manifests/dashboard_ingress.yaml
+  - name: Display dashboard token line
+    debug:
+      msg: "{{user_secret.stdout_lines[-1]}}"
