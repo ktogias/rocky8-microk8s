@@ -1,0 +1,7 @@
+- name: HostsSetup
+  hosts: all
+  become: yes
+  tasks:
+  - name: Ensure timezone is set
+    community.general.timezone:
+      name: "{{ timezone }}"

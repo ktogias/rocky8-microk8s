@@ -1,0 +1,12 @@
+[all]
+master ansible_host=<ip1> ansible_user=<username>
+worker ansible_host=<ip2> ansible_user=<username>
+
+[init]
+master
+
+[masters]
+master
+
+[workers]
+worker
