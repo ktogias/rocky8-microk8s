@@ -1,0 +1,47 @@
+global:
+  common:
+    operator:
+      enabled: true
+  edition: ee
+  hosts:
+    domain: {{domain}}
+  ingress:
+    configureCertmanager: false
+    enabled: false
+  gitlab:
+  initialRootPassword:
+    secret: root-credentials
+    key: password
+  email:
+    from: "{{emailFrom}}"
+    display_name: "{{emailDisplayName}}"
+  time_zone: {{timeZone}}
+  grafana:
+    enabled: false
+
+gitlab:
+  gitaly:
+    persistence:
+      storageClass: microk8s-hostpath
+
+postgresql:
+  persistence:
+    storageClass: microk8s-hostpath
+
+minio:
+  persistence:
+    storageClass: microk8s-hostpath
+
+redis:
+  master:
+    persistence:
+      storageClass: microk8s-hostpath
+
+certmanager:
+  install: false
+
+nginx-ingress:
+  enabled: false
+
+prometheus:
+  install: false

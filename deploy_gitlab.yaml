@@ -1,0 +1,34 @@
+- name: Deploy gitlab
+  hosts: init
+  become: yes
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/var/lib/snapd/snap/bin"
+    LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default('') }}:/lib64"
+  tasks:
+  - name: Ensure gitlab helm repo is added
+    command: microk8s helm3 repo add gitlab https://charts.gitlab.io/
+  - name: Ensure gitlab helm repo is up to date
+    command: microk8s helm3 repo update
+  - name: Ensure ~/helm_values dir exists
+    file:
+      path: ~/helm_values
+      state: directory
+  - name: Ensure ~/manifests dir exists
+    file:
+      path: ~/manifests
+      state: directory
+  - name: Template values
+    template:
+      src: helm_values/gitlab.yaml.tmpl
+      dest: ~/helm_values/gitlab.yaml
+  - name: Ensure chart is installed
+    command: microk8s helm3 upgrade -i -f ~/helm_values/gitlab.yaml gitlab gitlab/gitlab --namespace {{namespace | default('gitlab')}} --create-namespace --timeout 600s
+  - name: Create root password secret
+    shell: "microk8s kubectl -n {{namespace | default('gitlab')}} create secret generic root-credentials --from-literal=password={{rootPassword}} --dry-run -o yaml | microk8s kubectl apply -f - "
+  - name: Template ingress manifest
+    template:
+      src: manifests/gitlab_ingress.yaml.tmpl
+      dest: ~/manifests/gitlab_ingress.yaml
+  - name: Ensure ingress manifest is applied
+    command: microk8s kubectl apply -f ~/manifests/gitlab_ingress.yaml
+  

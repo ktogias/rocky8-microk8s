@@ -5,8 +5,8 @@
     PATH: "{{ ansible_env.PATH }}:/var/lib/snapd/snap/bin"
     LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default('') }}:/lib64"
   tasks:
-  - name: Ensure ingress, dns, dashboard, storage, registry are enabled
-    command: microk8s enable ingress dns dashboard storage registry:size={{registrySize | default('20Gi')}}
+  - name: Ensure ingress, dns, dashboard, storage, registry, helm3 are enabled
+    command: microk8s enable ingress dns dashboard storage registry:size={{registrySize | default('20Gi')}} helm3
   - name: Describe user secret
     shell: microk8s kubectl -n kube-system describe secret $(microk8s kubectl -n kube-system get secret | grep default-token | cut -d " " -f1)
     register: user_secret
