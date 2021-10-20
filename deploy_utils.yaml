@@ -7,6 +7,8 @@
   tasks:
   - name: Ensure ingress, dns, dashboard, storage, registry, helm3 are enabled
     command: microk8s enable ingress dns:{{nameServer | default('8.8.8.8,8.8.4.4')}} dashboard storage registry:size={{registrySize | default('20Gi')}} helm3
+  - name: Ensure cert-manager is deployed
+    command: microk8s kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
   - name: Describe user secret
     shell: microk8s kubectl -n kube-system describe secret $(microk8s kubectl -n kube-system get secret | grep default-token | cut -d " " -f1)
     register: user_secret

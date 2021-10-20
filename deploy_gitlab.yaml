@@ -29,6 +29,12 @@
     template:
       src: manifests/gitlab_ingress.yaml.tmpl
       dest: ~/manifests/gitlab_ingress.yaml
+  - name: Template self-signed issuer manifest
+    template:
+      src: manifests/gitlab_self_signed_issuer.yaml.tmpl
+      dest: ~/manifests/gitlab_self_signed_issuer.yaml
+  - name: Ensure self-signed issuer manifest
+    command: microk8s kubectl apply -f ~/manifests/gitlab_self_signed_issuer.yaml
   - name: Ensure ingress manifest is applied
     command: microk8s kubectl apply -f ~/manifests/gitlab_ingress.yaml
   

@@ -1,13 +1,32 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned
+  namespace: {{namespace}}
+spec:
+  dnsNames:
+    - gitlab.{{domain}}
+  secretName: gitlab-tls-secret
+  issuerRef:
+    name: selfsigned
+    kind: Issuer
+  commonName: gitlab.{{domain}}
+
+---
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: public
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   name: gitlab
   namespace: {{namespace}}
 spec:
+  tls:
+    - hosts:
+      - gitlab.{{domain}}
+      secretName: gitlab-tls-secret
   rules:
   - host: gitlab.{{domain}}
     http:
@@ -19,7 +38,7 @@ spec:
             name: gitlab-webservice-default
             port:
               number: 8080
-      - path: "/gitlab/?(.*)"
+      - path: "/"
         pathType: Prefix
         backend:
           service:

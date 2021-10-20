@@ -12,6 +12,16 @@ global:
   initialRootPassword:
     secret: root-credentials
     key: password
+  smtp:
+    enabled: true
+    address: {{smtpServer}}
+    domain: {{smtpServer}}
+    port: 25
+    authentication: ""
+    openssl_verify_mode: "none"
+    ssl: false
+    force_ssl: false
+    tls: false
   email:
     from: "{{emailFrom}}"
     display_name: "{{emailDisplayName}}"
@@ -23,6 +33,10 @@ gitlab:
   gitaly:
     persistence:
       storageClass: microk8s-hostpath
+  webservice:
+    replicas: 1
+  sidekiq:
+    replicas: 1
 
 postgresql:
   persistence:
@@ -48,3 +62,6 @@ prometheus:
 
 registry:
   enabled: false
+
+gitlab-runner:
+  certsSecretName: gitlab-tls-secret
