@@ -23,3 +23,27 @@
   - name: Display dashboard token line
     debug:
       msg: "{{user_secret.stdout_lines[-1]}}"
+
+- name: Fix permissions
+  hosts: all
+  become: yes
+  tags: 
+    - persmissions
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/var/lib/snapd/snap/bin"
+    LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default('') }}:/lib64"
+  tasks:
+  - name: Ensure dirs created under /var/snap/microk8s/common/default-storage are writable by everyone
+    ansible.posix.acl:
+      path: /var/snap/microk8s/common/default-storage
+      etype: group
+      default: yes
+      permissions: rwX
+      state: present
+  - name: Ensure dirs created under /var/snap/microk8s/common/default-storage are writable by everyone
+    ansible.posix.acl:
+      path: /var/snap/microk8s/common/default-storage
+      etype: other
+      default: yes
+      permissions: rwX
+      state: present
