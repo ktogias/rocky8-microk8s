@@ -1,6 +1,6 @@
 [all]
-master ansible_host=<ip1> ansible_user=<username>
-worker ansible_host=<ip2> ansible_user=<username>
+master ansible_port=<ssh_port> ansible_host=<ip1> ansible_user=<username>
+worker ansible_port=<ssh_port> ansible_host=<ip2> ansible_user=<username>
 
 [init]
 master

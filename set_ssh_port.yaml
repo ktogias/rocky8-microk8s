@@ -1,0 +1,19 @@
+- name: SetSshPort
+  hosts: all
+  become: yes
+  tasks:
+  - name: Ensure SSH port is configured in sshd_config
+    lineinfile:
+      dest: "/etc/ssh/sshd_config"
+      regexp: "^Port"
+      line: "Port {{ sshPort }}"
+  - name: Ensure selinux rule for SSH port is present
+    seport:
+      ports: "{{ sshPort }}"
+      proto: "tcp"
+      setype: "ssh_port_t"
+      state: "present"
+  - name: Ensure sshd is restarted
+    service:
+      name: sshd
+      state: restarted
