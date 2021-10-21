@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ansible-galaxy collection install community.general ansible.posix
+ansible-galaxy collection install community.general ansible.posix community.kubernetes
