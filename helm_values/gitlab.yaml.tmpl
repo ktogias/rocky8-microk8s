@@ -15,13 +15,14 @@ global:
   smtp:
     enabled: true
     address: {{smtpServer}}
-    domain: {{smtpServer}}
     port: 25
     authentication: ""
     openssl_verify_mode: "none"
     ssl: false
     force_ssl: false
     tls: false
+    ca_file: ""
+    starttls_auto: false
   email:
     from: "{{emailFrom}}"
     display_name: "{{emailDisplayName}}"
@@ -34,7 +35,7 @@ gitlab:
     persistence:
       storageClass: microk8s-hostpath
   webservice:
-    replicas: 1
+    replicaCount: 1
   sidekiq:
     replicas: 1
 
