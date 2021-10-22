@@ -1,1 +1,10 @@
+# Set nodes timezone
 timezone: Europe/Athens
+# The dns name under which you want to access kuberentes dashboard. It must resolve to one of the nodes ips.
+dashboardIngressHost: mycluster.mydomain.org
+# The forwarding DNS server used by Microk8s dns service. 
+nameServer: 4.4.4.4
+# The port you want to use for SSH access to your nodes. 
+# You may want to use a port different than the default 22 for security reasons if you want to expose some other shell service under 22
+# Used by set_ssh_port playbook
+sshPort: 22

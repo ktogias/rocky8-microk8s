@@ -1,3 +1,22 @@
+# The kuberentes namespace under wich we will deploy gitlab
 namespace: gitlab
-rootPassword: <<passwd>>
-domain: <<mydomain>>
+# The root password of our gitlab
+rootPassword: <<password>>
+# The domain of our gitlab. 
+# If your domain is mydomain.org, you will access gitlab at https://gitlab.mydomain.org. 
+# gitlab.mydomain.org dns should resolve to the ip of one of your cluster nodes. 
+domain: mydomain.org
+# The email address used in the from: for emails sent by gitlab 
+emailFrom: noreply@mydomain.org
+# The sender name for emails sent by gitlab
+emailDisplayName: My Gitlab
+# The time zone for gitlab 
+timeZone: Europe/Athens
+# The smtp server used for sending email.
+# Current configuration is for no encryption, no authenticating smtp on 25. 
+# To customize further edit helm_values/gitlab.yaml.tmpl
+smtpServer: mail.mydomain.org
+# The port wou use to expose gitlab shell for pushing and pulling code through ssh.
+# If you want to use port 22 make sure you have set the ssh port of your nodes to a custom port.
+# You can run the set_ssh_port.yaml playbook with vars.yaml to set the ssh port of nodes to a custom port (sshPort variable) 
+shellExposePort: 3333
