@@ -2,6 +2,8 @@
 
 This is an [Ansible](https://github.com/ansible/ansible) based GitOps project for setting up a [Microk8s](https://microk8s.io/) cluster on nodes running [Rocky8](https://rockylinux.org/).
 
+It is meant to be used for development, testing and learning purposes. It does not provide storage replication and other High Availability features, so it is not suitable for hosting production payloads.
+
 ## What you will need
 
 1. SSH access to one or more vms (or physical machines) with a minimal install of Rocky8 (Playbooks should work on any RHEL8 based distro). See https://docs.rockylinux.org/guides/installation/ for Rocky Linux installation instructions. Your account on the nodes must be able to sudo or be root.
