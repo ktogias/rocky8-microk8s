@@ -70,4 +70,13 @@
       - ingress
       - shell_ingress
     shell: microk8s kubectl -n ingress patch configmap nginx-ingress-tcp-microk8s-conf --patch "$(cat ~/manifests/gitlab_shell_patch_ingress_tcp_configmap.yaml)"
-  
+  - name: Ensure gitlab admin service account manifest is copied
+    tags: 
+    - serviceaccount
+    copy:
+      src: manifests/gitlab_admin_service_account.yaml
+      dest: ~/manifests/gitlab_shell_patch_ingress_tcp_configmap.yaml
+  - name: Ensure gitlab admin service account manifest is applied
+    tags:
+    - serviceaccount
+    command: microk8s kubectl apply -f ~/manifests/gitlab_shell_patch_ingress_tcp_configmap.yaml
