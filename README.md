@@ -58,6 +58,9 @@ If your cluster is too small in terms of CPU cores and RAM for GitLab the deploy
 
 Wait for the deployment to complete (it may take several minutes) and then open your browser to https://gitlab.```domain``` (see ```gitlab_vars.yaml```) and login using the root account and root password (see ```rootPassword``` in ```gitlab_vars.yaml```).  
 
+## Setup your GitLab and push your code
+
+See https://docs.gitlab.com/ee/topics/set_up_organization.html and https://docs.gitlab.com/ee/user/project/  for setting up and using gitlab.
 
 ## Known issues
 1. When having multiple nodes pods may fail with ```Permission denied``` error for PersistentVolumes. Run ```chmod ugo+rwX /var/snap/microk8s/common/default-storage/*``` on each node to fix permissions.
