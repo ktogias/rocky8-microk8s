@@ -62,7 +62,7 @@ Wait for the deployment to complete (it may take several minutes) and then open 
 
 See https://docs.gitlab.com/ee/topics/set_up_organization.html and https://docs.gitlab.com/ee/user/project/  for setting up and using gitlab.
 
-## Enabling CD pipeline for your project
+## Enabling CI/CD pipeline for your project
 
 1. Follow the steps in https://docs.gitlab.com/ee/user/project/clusters/add_existing_cluster.html to connect your Microk8s cluster to your GitLab Deployment through cluster certificates.
    - Prepend any kubectl commands with microk8s. e.g. ```microk8s kubectl -n kube-system describe secret $(microk8s kubectl -n kube-system get secret | grep gitlab | awk '{print $1}')```.
