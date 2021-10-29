@@ -58,9 +58,25 @@ If your cluster is too small in terms of CPU cores and RAM for GitLab the deploy
 
 Wait for the deployment to complete (it may take several minutes) and then open your browser to https://gitlab.```domain``` (see ```gitlab_vars.yaml```) and login using the root account and root password (see ```rootPassword``` in ```gitlab_vars.yaml```).  
 
-## Setup your GitLab and push your code
+## Setting up GitLab and pushing your code
 
 See https://docs.gitlab.com/ee/topics/set_up_organization.html and https://docs.gitlab.com/ee/user/project/  for setting up and using gitlab.
+
+## Enabling CD pipeline for your project
+
+1. Follow the steps in https://docs.gitlab.com/ee/user/project/clusters/add_existing_cluster.html to connect your Microk8s cluster to your GitLab Deployment through cluster certificates.
+   - Prepend any kubectl commands with microk8s. e.g. ```microk8s kubectl -n kube-system describe secret $(microk8s kubectl -n kube-system get secret | grep gitlab | awk '{print $1}')```.
+   - In step 3.c. if the API url returned has is of the form ```https://127.0.0.1:16443```, substitute ```127.0.0.1``` with the public ip of your init node.
+   - You can skip steps e.i. and e.ii. as the required ServiceAccount and ClusterRoleBinding resources have already been created by deploy_gitlab.yaml playbook.  
+   - You don't have to disable Role-Based Access Control.
+2. Setup for building and pushing container images.  
+   You will build and push your container images to your cluster's registry. The registry we use in this setup is the default deployed by Microk8s, that is configured with no encryption (insecure registry).
+   - In order to be able to build container images through your GitLab pipelines you can use Kaniko builder (https://github.com/GoogleContainerTools/kaniko). 
+   - gitlab-kaniko (https://gitlab.com/griffinplus/gitlab-kaniko) provides an image with kaniko prepared for use on a Gitlab CI Runner. The current gitlab-kaniko image uses an old kaniko version that fail push to insecure registries. 
+   - You can use my gitlab-kaniko fork at https://github.com/ktogias/gitlab-kaniko to build a gitlab-kaniko image with kaniko 1.7.0 that works fine with the insecure regstry of your cluster. Clone the project and run ```docker build .```. Then tag the image as ```<your-cluster's-domain-name>:32000/gitlab-kaniko/kanikov1.14:latest``` and push it to your registry. See https://docs.docker.com/engine/reference/commandline/push/ for pushing and https://docs.docker.com/registry/insecure/ for setting up pushing to your insecure registry from your workstation. If you are usign podman see https://www.redhat.com/sysadmin/manage-container-registries .
+3. Create a pipeline for your automaticaly building a new image and deploying it to your cluster when pushing new code.
+   You can find an example pipeline with a corresponding deployment manifest at https://github.com/ktogias/gitlab-kaniko/tree/master/example .
+4. If everything is OK when you push to gitlab a new pipeline should be started that will build, test and deploy your application. 
 
 ## Known issues
 1. When having multiple nodes pods may fail with ```Permission denied``` error for PersistentVolumes. Run ```chmod ugo+rwX /var/snap/microk8s/common/default-storage/*``` on each node to fix permissions.
