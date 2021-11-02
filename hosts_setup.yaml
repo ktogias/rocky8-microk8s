@@ -62,6 +62,18 @@
       name: firewalld
       enabled: no
       state: stopped
+  - name: Ensure swap is disables for current session
+    tags:
+    - swapoff
+    command: swapoff -a
+  - name: Ensure swap is disabled in fstab
+    tags: 
+    - swapoff
+    replace:
+      path: /etc/fstab
+      regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+      replace: '#\1\2\3swap\4'
+      backup: yes
   # - name: Ensure required firewall ports are open
   #   ansible.posix.firewalld:
   #     port: "{{ item }}"
