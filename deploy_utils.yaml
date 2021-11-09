@@ -17,10 +17,14 @@
       path: ~/manifests
       state: directory
   - name: Template dashboard ingress manifest
+    tags:
+    - dashboard_ingress
     template:
       src: manifests/dashboard_ingress.yaml.tmpl
       dest: ~/manifests/dashboard_ingress.yaml
   - name: Ensure ingress manifest is applied
+    tags:
+    - dashboard_ingress
     command: microk8s kubectl apply -f ~/manifests/dashboard_ingress.yaml
   - name: Display dashboard token line
     debug:

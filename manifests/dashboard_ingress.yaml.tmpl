@@ -12,7 +12,7 @@ spec:
   - host: {{dashboardIngressHost}}
     http:
       paths:
-      - path: "/dashboard/?(.*)"
+      - path: "/kdashboard/?(.*)"
         pathType: Prefix
         backend:
           service:
