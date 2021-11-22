@@ -1,0 +1,17 @@
+cli:
+  version: v1.7.0
+  arch: amd64
+namespace: velero
+provider:
+  type: minio
+  url: http://150.140.12.119:9000
+  username: minioadmin
+  password: apass
+  plugin:
+    version: v1.3.0
+  bucket: vkub
+  deployRestic: true
+  defaultVolumesToRestic: true
+  restic:
+    repositoryPassword: anotherpass
+
