@@ -1,17 +1,20 @@
 ---
-- name: Ensure Helm is installed
-  tags: 
-    - prepare
-  import_playbook: install-helm3.yaml
-
 - name: Chek if CLI is already installed
   tags:
   - check
-  hosts: initkubmaster
+  hosts: init
   become: true
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/var/lib/snapd/snap/bin"
+    LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default('') }}:/lib64"
   tasks:
+  - name: Ensure ~/.kube dir is present
+    file:
+      path: ~/.kube
+      state: directory
+  - name: Ensure ~/.kube/config is present
+    shell: microk8s config > ~/.kube/config
   - name: Try to get velero version
-    become_user: "{{ kubectl_user }}"
     command: /usr/local/bin/velero version
     register: velero_version_result
     ignore_errors: yes
@@ -25,27 +28,30 @@
 - name: Ensure CLI binary is installed
   tags:
     - install_cli
-  hosts: initkubmaster
+  hosts: init
   become: true
   tasks:
   - name: Is velero already installed?
     debug:
       msg: "{{VELERO_IS_INSTALLED | default(false)}}"
+  - name: Ensure download directory is present
+    file:
+      path: ~/downloads
+      state: directory
   - name: Download CLI binary
     unarchive:
-      src: https://github.com/vmware-tanzu/velero/releases/download/{{velero.cli.version | default("v1.7.0")}}/velero-{{velero.cli.version | default("v1.7.0")}}-linux-{{velero.cli.arch | default("amd64")}}.tar.gz
-      dest: /tmp/
+      src: https://github.com/vmware-tanzu/velero/releases/download/{{cli.version | default("v1.7.0")}}/velero-{{cli.version | default("v1.7.0")}}-linux-{{cli.arch | default("amd64")}}.tar.gz
+      dest: ~/downloads/
       remote_src: yes
     when: VELERO_IS_INSTALLED | default(false)| bool is false
   - name: Install CLI binary
     copy:
-      src: /tmp/velero-{{velero.cli.version | default("v1.5.3")}}-linux-{{velero.cli.arch | default("amd64")}}/velero
+      src: ~/downloads/velero-{{cli.version | default("v1.7.0")}}-linux-{{cli.arch | default("amd64")}}/velero
       dest: /usr/local/bin/velero
       mode: '755'
       remote_src: yes
     when: VELERO_IS_INSTALLED | default(false)| bool is false
   - name: Try to get velero version
-    become_user: "{{ kubectl_user }}"
     command: /usr/local/bin/velero version
     register: velero_version_result
     when: VELERO_IS_INSTALLED | default(false)| bool is false
@@ -57,13 +63,15 @@
 - name: Setup helm repo 
   tags: 
     - prepare
-  hosts: initkubmaster
+  hosts: init
   become: true
   gather_facts: False
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/var/lib/snapd/snap/bin"
+    LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default('') }}:/lib64"
   tasks:
   - name: Ensure vmware-tanzu helm repo is added 
-    become_user: "{{ kubectl_user }}"
-    command: /usr/local/bin/helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
+    command: microk8s helm3 repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
     register: repo_add_result
   - name: Show repo add resul
     debug:
@@ -72,37 +80,36 @@
 - name: Install chart
   tags: 
     - install_chart
-  hosts: initkubmaster
+  hosts: init
   become: true
   gather_facts: False
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/var/lib/snapd/snap/bin"
+    LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default('') }}:/lib64"
   tasks:
   - name: Ensure vmware-tanzu helm repo is up to date
-    become_user: "{{ kubectl_user }}"
-    command: /usr/local/bin/helm repo update
+    command: microk8s helm3 repo update
     register: repo_update_result
   - name: Show repo update result
     debug:
       var: repo_update_result
   - name: Template values.yaml
     template:
-      src: ../helm-values/velero/values.tmpl.yaml
-      dest: "/tmp/velero-helm-values.yaml"
+      src: helm_values/velero.yaml.tmpl
+      dest: "~/helm_values/velero.yaml"
   - name: Ensure chart is installed
-    become_user: "{{ kubectl_user }}"
-    command: /usr/local/bin/helm upgrade -i -f /tmp/velero-helm-values.yaml velero vmware-tanzu/velero --namespace {{velero.namespace | default('velero')}} --create-namespace
+    command: microk8s helm3 upgrade -i -f ~/helm_values/velero.yaml velero vmware-tanzu/velero --namespace {{namespace | default('velero')}} --create-namespace
     register: helm_install_result
   - name: Show helm install result
     debug:
       var: helm_install_result
   - name: Register existence of restic repositories
-    become_user: "{{ kubectl_user }}"
-    command: kubectl -n velero get resticrepositories.velero.io -o name
+    command: microk8s kubectl -n velero get resticrepositories.velero.io -o name
     register: get_resticrepositories_result
   - name: Show Register existence of restic repositories result
     debug:
       var: get_resticrepositories_result.stdout_lines
   - name: Set Restic RepositoryPassword
-    become_user: "{{ kubectl_user }}"
-    shell: "kubectl -n {{velero.namespace | default('velero')}} create secret generic velero-restic-credentials --from-literal=repository-password={{velero.restic.repositoryPassword}} --dry-run -o yaml | kubectl apply -f - "
-    when: velero.restic.repositoryPassword is defined and get_resticrepositories_result.stdout_lines | length == 0
+    shell: "microk8s kubectl -n {{namespace | default('velero')}} create secret generic velero-restic-credentials --from-literal=repository-password={{restic.repositoryPassword}} --dry-run -o yaml | microk8s kubectl apply -f - "
+    when: restic.repositoryPassword is defined and get_resticrepositories_result.stdout_lines | length == 0
 

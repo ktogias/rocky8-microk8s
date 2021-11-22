@@ -1,0 +1,28 @@
+{% if provider.type == 'minio' %}
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:{{provider.plugin.version | default('v1.3.0')}}
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+configuration:
+  provider: aws
+  backupStorageLocation:
+    bucket: {{bucket}}
+    config: 
+      region: minio
+      s3ForcePathStyle: true
+      s3Url: {{provider.url}}
+  volumeSnapshotLocation:
+    config:
+      region: minio
+  defaultVolumesToRestic: {{defaultVolumesToRestic | default(true)}}
+credentials:
+  secretContents:
+    cloud: |
+      [default]
+      aws_access_key_id={{provider.username}}
+      aws_secret_access_key={{provider.password}}
+deployRestic: {{deployRestic | default(true)}}
+{% endif %}
