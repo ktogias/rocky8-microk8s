@@ -37,7 +37,9 @@ gitlab:
   webservice:
     replicaCount: 1
   sidekiq:
-    replicas: 1
+    minReplicas: 1
+    maxReplicas: 1
+    maxUnavailable: 1
 
 postgresql:
   persistence:
